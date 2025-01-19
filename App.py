@@ -1,9 +1,11 @@
 import sys
 import cv2
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QHBoxLayout, QWidget, QLineEdit, QSpacerItem, QSizePolicy
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QLabel, QFileDialog, QVBoxLayout, QHBoxLayout, \
+    QWidget, QLineEdit, QSpacerItem, QSizePolicy
 from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import Qt
 from ultralytics import YOLO
+
 
 class TumorDetectionApp(QMainWindow):
     def __init__(self):
@@ -128,13 +130,23 @@ class TumorDetectionApp(QMainWindow):
         horizontal_layout.addWidget(right_widget, stretch=1)  # Decrease stretch for right bar
 
         # Main widget
-        container = QWidget()
-        container.setLayout(horizontal_layout)
-        self.setCentralWidget(container)
+        container = QVBoxLayout()
+        container.addLayout(horizontal_layout)
+
+        # Footer
+        footer = QLabel("Project by Abdul Moiz Qarni - 17PWMCT0564", self)
+        footer.setAlignment(Qt.AlignCenter)
+        footer.setStyleSheet("font-size: 14px; color: #BBBBBB; padding: 10px;")
+        container.addWidget(footer)
+
+        main_widget = QWidget()
+        main_widget.setLayout(container)
+        self.setCentralWidget(main_widget)
 
     def upload_image(self):
         options = QFileDialog.Options()
-        file_path, _ = QFileDialog.getOpenFileName(self, "Open Image File", "", "Image Files (*.png *.jpg *.jpeg *.bmp)", options=options)
+        file_path, _ = QFileDialog.getOpenFileName(self, "Open Image File", "",
+                                                   "Image Files (*.png *.jpg *.jpeg *.bmp)", options=options)
         if file_path:
             self.image_path = file_path
             self.display_image(self.image_path)
@@ -162,6 +174,8 @@ class TumorDetectionApp(QMainWindow):
         image = cv2.imread(self.image_path)
         overlay = image.copy()
 
+        total_area_cm2 = 0  # Initialize total area
+
         if hasattr(result, "masks") and result.masks is not None:
             for mask in result.masks.data:
                 mask_np = mask.cpu().numpy()  # Convert to NumPy
@@ -176,20 +190,23 @@ class TumorDetectionApp(QMainWindow):
                     # Calculate tumor area in pixels and convert to cm²
                     area_pixels = cv2.contourArea(contour)
                     area_cm2 = area_pixels / (self.pixel_to_cm_scale ** 2)
-
-                    # Update the tumor size in the top bar
-                    self.tumor_size = f"{area_cm2:.2f} cm²"
-                    self.tumor_size_label.setText(f"Tumor size: {self.tumor_size}")
+                    total_area_cm2 += area_cm2  # Accumulate total area
 
             # Blend overlay
             alpha = 0.5
             image = cv2.addWeighted(overlay, alpha, image, 1 - alpha, 0)
 
+            # Update the tumor size in the top bar
+            self.tumor_size = f"{total_area_cm2:.2f} cm²"
+            self.tumor_size_label.setText(f"Tumor size: {self.tumor_size}")
+
         # Convert image to QImage and display
         height, width, channel = image.shape
         bytes_per_line = 3 * width
         q_image = QImage(image.data, width, height, bytes_per_line, QImage.Format_BGR888)
-        self.image_label.setPixmap(QPixmap.fromImage(q_image).scaled(self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        self.image_label.setPixmap(
+            QPixmap.fromImage(q_image).scaled(self.image_label.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation))
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

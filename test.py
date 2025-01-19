@@ -44,7 +44,7 @@ def run_inference(image_path):
                     area_cm2 = area_pixels / 1736.6  # Conversion factor
                     x, y, w, h = cv2.boundingRect(contour)
                     label = f"Area: {area_cm2:.2f} cm²"
-                    cv2.putText(image, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+                    cv2.putText(image, label, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 2)
 
         # Blend the overlay with the original image
         alpha = 0.5  # Transparency factor
@@ -60,7 +60,7 @@ def run_inference(image_path):
 
 if __name__ == "__main__":
     # Parameters
-    image_path = "test/images/y2_jpg.rf.d300137736af9b9814ec1d4c2a84f07e.jpg"  # Replace with your image path
+    image_path = "images/y2_jpg.rf.d300137736af9b9814ec1d4c2a84f07e.jpg"  # Replace with your image path
 
     # Run inference
     run_inference(image_path)
