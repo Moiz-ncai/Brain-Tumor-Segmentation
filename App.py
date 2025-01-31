@@ -134,7 +134,7 @@ class TumorDetectionApp(QMainWindow):
         container.addLayout(horizontal_layout)
 
         # Footer
-        footer = QLabel("Project by Abdul Moiz Qarni - 17PWMCT0564", self)
+        footer = QLabel("Developed by Abdul Moiz Qarni", self)
         footer.setAlignment(Qt.AlignCenter)
         footer.setStyleSheet("font-size: 14px; color: #BBBBBB; padding: 10px;")
         container.addWidget(footer)
